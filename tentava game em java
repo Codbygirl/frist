@@ -1,0 +1,109 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+
+public class PlataformaJogo extends JPanel implements ActionListener, KeyListener {
+    private Timer timer;
+    private int x, y, velX, velY;
+    private boolean pulando, noChao;
+    
+    private final int GRAVIDADE = 1;
+    private final int PULO = -15;
+    
+    public PlataformaJogo() {
+        this.setPreferredSize(new Dimension(800, 600));
+        this.setBackground(Color.CYAN);
+        this.addKeyListener(this);
+        this.setFocusable(true);
+        
+        x = 100;  // Posição inicial no eixo X
+        y = 500;  // Posição inicial no eixo Y (na "terra")
+        velX = 0;
+        velY = 0;
+        pulando = false;
+        noChao = true;
+        
+        timer = new Timer(1000 / 60, this); // 60 FPS
+        timer.start();
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        mover();
+        repaint();
+    }
+
+    private void mover() {
+        x += velX;
+        y += velY;
+
+        if (pulando) {
+            if (noChao) {
+                velY = PULO;
+                noChao = false;
+                pulando = false;
+            }
+        }
+
+        if (!noChao) {
+            velY += GRAVIDADE;
+            if (y >= 500) {  // Se chegar ao "solo"
+                y = 500;
+                velY = 0;
+                noChao = true;
+            }
+        }
+    }
+
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        // Desenho do personagem
+        g.setColor(Color.RED);
+        g.fillRect(x, y - 50, 30, 50);  // Personagem (caixinha)
+
+        // Desenho da plataforma (solo)
+        g.setColor(Color.GREEN);
+        g.fillRect(0, 550, 800, 50);  // Solo
+
+        // Desenho do céu
+        g.setColor(Color.BLUE);
+        g.fillRect(0, 0, 800, 550);
+    }
+
+    // Métodos de controle de teclas
+    public void keyPressed(KeyEvent e) {
+        int key = e.getKeyCode();
+        if (key == KeyEvent.VK_LEFT) {
+            velX = -5;  // Mover para a esquerda
+        }
+        if (key == KeyEvent.VK_RIGHT) {
+            velX = 5;  // Mover para a direita
+        }
+        if (key == KeyEvent.VK_SPACE) {
+            if (noChao) {
+                pulando = true;
+            }
+        }
+    }
+
+    public void keyReleased(KeyEvent e) {
+        int key = e.getKeyCode();
+        if (key == KeyEvent.VK_LEFT || key == KeyEvent.VK_RIGHT) {
+            velX = 0;  // Parar movimento horizontal
+        }
+    }
+
+    public void keyTyped(KeyEvent e) {
+        // Não utilizado
+    }
+
+    public static void main(String[] args) {
+        JFrame janela = new JFrame("Jogo de Plataforma");
+        PlataformaJogo jogo = new PlataformaJogo();
+        janela.add(jogo);
+        janela.pack();
+        janela.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        janela.setLocationRelativeTo(null);
+        janela.setVisible(true);
+    }
+}
